@@ -1,6 +1,6 @@
 ---
 title: "MB-POST User Manual"
-author: "MB-POST Project"
+author: "Shin-MassBank Project"
 version: "1.0"
 date: "%%__LAST_COMMIT_DATE__%%"
 ---
