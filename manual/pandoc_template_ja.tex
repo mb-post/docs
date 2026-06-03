@@ -1,0 +1,356 @@
+% ============================================================
+%  pandoc_header_techbook.tex
+%  Technical Book Template — pandoc + lualatex + ltjsreport
+%  Updated cover page, header (logo), and footer (copyright)
+% ============================================================
+
+%% ─── 1. Color Palette ───────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{TBNavy}{RGB}{22, 58, 106}
+\definecolor{TBAccent}{RGB}{50, 110, 175}
+\definecolor{TBLightBlue}{RGB}{220, 232, 248}
+\definecolor{TBPalest}{RGB}{236, 243, 252}
+\definecolor{TBDarkGray}{RGB}{55, 55, 55}
+\definecolor{TBMidGray}{RGB}{120, 120, 120}
+\definecolor{TBRule}{RGB}{160, 190, 220}
+\definecolor{TBCodeBg}{RGB}{244, 247, 251}
+\definecolor{TBLink}{RGB}{0, 70, 140}     % URL・外部リンク（明るい青）
+\definecolor{TBInternalLink}{RGB}{50, 110, 175} % 内部リンク（目次・相互参照）
+
+%% ─── 2. フォント設定（ゴシック体） ──────────────────────────
+\usepackage{luatexja-fontspec}
+% macOS: Hiragino / Linux (CI): Noto Sans CJK JP
+\IfFontExistsTF{Hiragino Kaku Gothic ProN W3}{%
+  \setmainjfont[BoldFont = Hiragino Kaku Gothic ProN W6]{Hiragino Kaku Gothic ProN W3}%
+}{%
+  \setmainjfont{Noto Sans CJK JP}%
+}
+\IfFontExistsTF{TeX Gyre Heros}{%
+  \setmainfont[BoldFont = TeX Gyre Heros Bold, ItalicFont = TeX Gyre Heros Italic, Scale = MatchLowercase]{TeX Gyre Heros}%
+}{%
+  \setmainfont[Scale = MatchLowercase]{Latin Modern Sans}%
+}
+
+%% ─── 3. Hyperref 設定 ───────────────────────────────────────
+%  リンク色は Makefile の -V colorlinks=true / -V linkcolor=... で制御。
+%  pandoc が colorlinks=true を受け取ると hidelinks を出力しなくなり、
+%  代わりに linkcolor / urlcolor / citecolor 変数の値をそのまま使う。
+%  ここでは追加設定のみ行う。
+\AtBeginDocument{%
+  \hypersetup{pdfborder={0 0 0}}%
+}
+
+%% ─── 3b. ドキュメント初期設定 ──────────────────────────────────
+%  \TBCopyYear は year_meta.lua が header-includes に注入する。
+\AtBeginDocument{%
+  \setlength{\footskip}{10mm}%
+  \addtocontents{toc}{\protect\markboth{目次}{目次}}%
+}
+
+%% ─── 4. タイトルページ ───────────────────────────────────────
+%  右上にロゴ、タイトル + 横罫線 + 版数 + 日付、左下に copyright。
+%  \docversion は version_meta.lua が header-includes に注入する。
+\makeatletter
+\renewcommand{\maketitle}{%
+  \newpage
+  \thispagestyle{empty}%
+  % ロゴ（右上）— 色付き帯 + "MB-POST" テキスト
+  \noindent\hfill
+  \origincludegraphics[height=18mm]{logo.pdf}%
+  \hspace{6pt}%
+  \raisebox{7mm}{\Large\bfseries\color{TBDarkGray}MB-POST}%
+  \par
+  \vspace*{5cm}
+  % タイトル
+  \noindent{\fontsize{26}{36}\selectfont\bfseries\@title\par}%
+  \vspace{2pt}
+  \noindent{\color{TBNavy}\rule{\linewidth}{1.5pt}\par}%
+  \vspace{10pt}
+  % 版数・日付
+  \noindent{\large\color{TBDarkGray}\docversion\par}%
+  \vspace{4pt}
+  \noindent{\large\color{TBDarkGray}\@date\par}%
+  \vfill
+  % Copyright（左下）
+  \noindent{\small\itshape\color{TBMidGray}%
+    Copyright \textcopyright\ \TBCopyYear\ \@author\par}%
+  \newpage
+}
+\makeatother
+
+%% ─── 5. 章・節タイトル ───────────────────────────────────────
+%  [explicit] で見出しテキスト #1 をフォーマット内で参照可能にする
+\usepackage[explicit]{titlesec}
+
+%% ── 5a. Chapter（番号付き）: ネイビー帯 + 薄青タイトル背景
+\titleformat{\chapter}[block]
+  {\normalfont\bfseries}
+  {}
+  {0pt}
+  {%
+    \vbox{%
+      \hbox to \linewidth{%
+        \colorbox{TBNavy}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+          \vspace{5pt}%
+          \hspace{10pt}%
+          {\color{white}\large\mdseries 第\thechapter 章}%
+          \vspace{5pt}%
+        }}%
+      }%
+      \nointerlineskip
+      \hbox to \linewidth{%
+        \colorbox{TBLightBlue}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+          \vspace{12pt}%
+          \hspace{14pt}%
+          {\color{TBNavy}\LARGE\bfseries #1}%
+          \vspace{14pt}%
+        }}%
+      }%
+    }%
+  }
+  [\thispagestyle{fancy}]
+
+\titlespacing*{\chapter}{0pt}{0pt}{24pt}
+
+%% ── 5b. Chapter*（目次など番号なし章）: 薄青タイトル背景のみ
+\titleformat{name=\chapter,numberless}[block]
+  {\normalfont\bfseries}
+  {}
+  {0pt}
+  {%
+    \markboth{#1}{#1}%
+    \colorbox{TBLightBlue}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \vspace{12pt}%
+      \hspace{14pt}%
+      {\color{TBNavy}\LARGE\bfseries #1}%
+      \vspace{14pt}%
+    }}%
+  }
+  [\thispagestyle{fancy}]
+
+\titlespacing*{name=\chapter,numberless}{0pt}{0pt}{24pt}
+
+%% ── 5c. Section: 薄青背景 + 青左縦線
+\titleformat{\section}[block]
+  {\normalfont\large\bfseries}
+  {}
+  {0pt}
+  {%
+    \colorbox{TBLightBlue}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \vspace{4pt}%
+      {\color{TBAccent}\rule[-3pt]{4pt}{16pt}}%
+      \hspace{8pt}%
+      {\color{TBNavy}\thesection\hspace{8pt}#1}%
+      \vspace{5pt}%
+    }}%
+  }
+
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+%% ── 5d. Subsection: 最薄青背景 + 細左縦線
+\titleformat{\subsection}[block]
+  {\normalfont\normalsize\bfseries}
+  {}
+  {0pt}
+  {%
+    \colorbox{TBPalest}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \vspace{3pt}%
+      {\color{TBAccent}\rule[-2pt]{3pt}{11pt}}%
+      \hspace{7pt}%
+      {\color{TBNavy}\thesubsection\hspace{6pt}#1}%
+      \vspace{4pt}%
+    }}%
+  }
+
+\titlespacing*{\subsection}{0pt}{12pt}{5pt}
+
+%% ── 5e. Subsubsection: 青縦線のみ（背景なし）
+\titleformat{\subsubsection}[hang]
+  {\normalfont\normalsize\bfseries\color{TBNavy}}
+  {{\color{TBAccent}\rule[-2pt]{2pt}{10pt}}\hspace{6pt}\thesubsubsection}
+  {0.6em}
+  {#1}
+
+\titlespacing*{\subsubsection}{0pt}{10pt}{3pt}
+
+%% ─── 6. ヘッダー・フッター ───────────────────────────────────
+%  ヘッダー左: 節番号 + 節タイトル（章の先頭ページは章タイトル）
+%  ヘッダー右: MB-POST ロゴ
+%  フッター左: Copyright © YEAR AUTHOR
+%  フッター右: | ページ番号
+
+\usepackage{fancyhdr}
+\setlength{\headheight}{14mm}
+
+\makeatletter
+
+%  ltjsreport の \chaptermark / \sectionmark を上書き
+\renewcommand{\chaptermark}[1]{%
+  \ifnum\value{chapter}>0
+    \markboth{\thechapter\enspace #1}{\thechapter\enspace #1}%
+  \else
+    \markboth{#1}{#1}%
+  \fi
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\enspace #1}%
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+%  左: 節番号 + 節タイトル（\rightmark）
+\fancyhead[LE,LO]{\small\color{TBMidGray}\nouppercase{\rightmark}}
+%  右: ロゴ + "MB-POST" テキスト
+\fancyhead[RE,RO]{%
+  \origincludegraphics[height=10mm]{logo.pdf}%
+  \hspace{5pt}%
+  \raisebox{3.5mm}{\small\bfseries\color{TBDarkGray}MB-POST}%
+}
+
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{%
+  {\color{TBRule}\hrule width\headwidth height\headrulewidth}%
+  \vskip-\headrulewidth
+}
+\renewcommand{\footrulewidth}{0pt}
+
+%  フッター左: copyright
+\fancyfoot[LE,LO]{\small\itshape\color{TBMidGray}%
+  Copyright \textcopyright\ \TBCopyYear\ \@author}
+%  フッター右: | ページ番号
+\fancyfoot[RE,RO]{\small\color{TBMidGray}\textbar\enspace\thepage}
+
+%  章の先頭ページ（plain スタイル）: 左に章タイトル、右にロゴ、フッターは同じ
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[LE,LO]{\small\color{TBMidGray}\nouppercase{\leftmark}}%
+  \fancyhead[RE,RO]{%
+    \origincludegraphics[height=10mm]{logo.pdf}%
+    \hspace{5pt}%
+    \raisebox{3.5mm}{\small\bfseries\color{TBDarkGray}MB-POST}%
+  }%
+  \fancyfoot[LE,LO]{\small\itshape\color{TBMidGray}%
+    Copyright \textcopyright\ \TBCopyYear\ \@author}%
+  \fancyfoot[RE,RO]{\small\color{TBMidGray}\textbar\enspace\thepage}%
+  \renewcommand{\headrulewidth}{0.5pt}%
+  \renewcommand{\headrule}{%
+    {\color{TBRule}\hrule width\headwidth height\headrulewidth}%
+    \vskip-\headrulewidth}%
+}
+
+\makeatother
+
+%% ─── 7. 表の行間正規化・セル内改行 ─────────────────────────────
+%  longtable ヘッダの minipage に linestretch が適用されて
+%  行間が異常に広がる問題を防ぐ
+\usepackage{makecell}
+\usepackage{colortbl}
+\colorlet{TBTableAlt}{TBPalest}
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{%
+  \setstretch{1.1}%
+  \small%
+}
+\AtBeginEnvironment{tabular}{%
+  \setstretch{1.1}%
+  \small%
+}
+
+%% ─── 7b. 章の先頭ページへの fancy スタイル強制（patchcmd） ─────
+%  ltjsreport の \chapter は \thispagestyle{plain} を呼び出す。
+%  titleformat の after-code と二重に対策することで確実に適用する。
+\makeatletter
+\patchcmd{\chapter}{\thispagestyle{plain}}{\thispagestyle{fancy}}{}{}
+\makeatother
+
+%% ─── 8. コードブロック ───────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle        = \small\ttfamily\color{TBDarkGray},
+  backgroundcolor   = \color{TBCodeBg},
+  frame             = single,
+  framerule         = 0.5pt,
+  rulecolor         = \color{TBRule},
+  xleftmargin       = 8pt,
+  xrightmargin      = 8pt,
+  framexleftmargin  = 8pt,
+  framexrightmargin = 8pt,
+  breaklines        = true,
+  breakatwhitespace = false,
+  keepspaces        = true,
+  columns           = flexible,
+  showstringspaces  = false,
+  keywordstyle      = \bfseries\color{TBNavy},
+  commentstyle      = \itshape\color{TBMidGray},
+  stringstyle       = \color{TBAccent},
+  numbers           = none,
+  aboveskip         = 8pt,
+  belowskip         = 8pt,
+}
+
+%% ─── 9. 図キャプション ───────────────────────────────────────
+\usepackage{caption}
+\captionsetup{
+  font          = small,
+  labelfont     = {bf, color=TBDarkGray},
+  labelsep      = period,
+  textfont      = {color=TBDarkGray},
+  justification = centering,
+  skip          = 6pt,
+}
+
+%% ─── 10. リスト余白調整 ──────────────────────────────────────
+%  linestretch=1.2 環境（1行≒14.4pt）に合わせた設定。
+%  pandoc デフォルトの \parskip=6pt はリスト前の空白を広く見せるため 3pt に抑制。
+%  topsep はリスト開始・終了時の追加余白（\parskip と合算されるため小さめに）。
+\usepackage{enumitem}
+\setlength{\parskip}{3pt}   % pandoc デフォルト 6pt → 3pt（リスト前の過剰空白を抑制）
+\setlist{topsep=2pt, itemsep=2pt, parsep=0pt, partopsep=0pt}
+\setlist[itemize,1]{leftmargin=*}
+\setlist[enumerate,1]{leftmargin=*}
+
+%% ─── 11. URL スタイル ────────────────────────────────────────
+\usepackage{url}
+\urlstyle{same}
+
+%% ─── 12. 図のボーダー ────────────────────────────────────────
+%  \fboxsep / \fboxrule をグループ内で変更し、グローバルへの
+%  漏れ出しを防ぐ（colorbox の幅計算ずれを防止）
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\makeatother
+
+\let\origincludegraphics\includegraphics
+\renewcommand{\includegraphics}[2][]{%
+  \begingroup
+    \setlength{\fboxsep}{5pt}%
+    \setlength{\fboxrule}{2pt}%
+    \fcolorbox{TBRule}{white}{%
+      \origincludegraphics[%
+        width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax,%
+        height=0.82\textheight,keepaspectratio%
+      ]{#2}%
+    }%
+  \endgroup
+}
+
+%% ─── 13. 長い英単語・URLの折り返し改善 ──────────────────────
+\sloppy
+\emergencystretch=3em
+
+%% ─── 14. 図の配置: Markdown 記述位置に強制固定 ──────────────
+%  pandoc は figure 環境を [htbp]（浮動）で生成する。
+%  float パッケージの H 指定（HERE, exactly）で上書きし、
+%  ソース中の挿入位置通りに画像を配置する。
+%
+%  [H] 配置では \intextsep / \textfloatsep が適用されないため、
+%  \AtBeginEnvironment / \AtEndEnvironment で figure 前後に
+%  明示的な余白を追加する。
+\usepackage{float}
+\floatplacement{figure}{H}
+
+%  figure 環境の前後に余白を追加（[H] 配置専用の対処）
+%  \addvspace は直前に同種の空白があれば加算しない（二重余白防止）
+\AtBeginEnvironment{figure}{\addvspace{10pt}}
+\AtEndEnvironment{figure}{\addvspace{8pt}}

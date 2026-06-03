@@ -1,0 +1,110 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; do not cancel in-progress runs so a
+# partially-deployed Pages update is not left in an inconsistent state.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Docker Buildx + GitHub Actions layer cache
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: mbpost-docs:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Run all Makefile targets inside the container.
+      # The manual/ directory is bind-mounted to /work so outputs land
+      # directly on the host filesystem.
+      - name: Generate PDF and HTML
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/work" \
+            --workdir /work/manual \
+            mbpost-docs:latest \
+            sh -c 'git config --global --add safe.directory /work && make pdf-ja pdf-en html-ja html-en'
+
+      # Assemble the GitHub Pages artifact under public/
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p public
+          cp manual/manual_ja.pdf  public/
+          cp manual/manual_en.pdf  public/
+          cp manual/manual_ja.html public/
+          cp manual/manual_en.html public/
+          cp -r manual/images        public/images
+
+          # Generate a minimal index page
+          cat > public/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ja">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>MB-POST User Manual</title>
+            <style>
+              body { font-family: sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; }
+              h1   { border-bottom: 2px solid #163a6a; padding-bottom: .4rem; color: #163a6a; }
+              h2   { color: #326eaf; margin-top: 2rem; }
+              ul   { line-height: 2; }
+              a    { color: #00468c; }
+            </style>
+          </head>
+          <body>
+            <h1>MB-POST User Manual</h1>
+
+            <h2>日本語 / Japanese</h2>
+            <ul>
+              <li><a href="manual_ja.html">HTML 版</a></li>
+              <li><a href="manual_ja.pdf">PDF 版</a></li>
+            </ul>
+
+            <h2>English</h2>
+            <ul>
+              <li><a href="manual_en.html">HTML version</a></li>
+              <li><a href="manual_en.pdf">PDF version</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+  # ──────────────────────────────────────────────────────────────────────────
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
