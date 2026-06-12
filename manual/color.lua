@@ -3,7 +3,10 @@
 -- In HTML output, the span class is preserved as-is (<span class="red">).
 --
 -- Also handles tables for LaTeX output:
---   - <br> inside cells → \makecell[l]{...} so line breaks work in any column type
+--   - <br> inside cells → \newline so line breaks work AND the text still wraps
+--     to the (p-type) column width. \makecell must NOT be used here: makecell
+--     sets each line at its natural width with no wrapping, so a segment longer
+--     than the column overflows into the neighbouring columns.
 --   - Alternating row background colors (odd rows: TBTableAlt, even rows: white)
 --     Header rows are not affected.
 -- Requires \usepackage{colortbl} and \colorlet{TBTableAlt}{...} in the LaTeX header.
@@ -40,27 +43,28 @@ local function has_br(inlines)
   return false
 end
 
--- Replace <br> with \\ and wrap the whole inline list in \makecell[l]{...}.
-local function wrap_makecell(inlines)
-  local result = { pandoc.RawInline("latex", "\\makecell[l]{") }
+-- Replace each <br> with \newline. Inside a pandoc p-type (paragraph) column
+-- this forces a line break while keeping normal word wrapping, so long segments
+-- are wrapped to the column width instead of overflowing.
+local function wrap_newline(inlines)
+  local result = {}
   for _, inline in ipairs(inlines) do
     if inline.t == "RawInline" and inline.format == "html"
        and inline.text:match("^<br%s*/?>$") then
-      table.insert(result, pandoc.RawInline("latex", "\\\\"))
+      table.insert(result, pandoc.RawInline("latex", "\\newline "))
     else
       table.insert(result, inline)
     end
   end
-  table.insert(result, pandoc.RawInline("latex", "}"))
   return result
 end
 
--- Process a single Cell, replacing <br> with \makecell when needed.
+-- Process a single Cell, replacing <br> with \newline when needed.
 local function process_cell(cell)
   if #cell.content == 1 then
     local block = cell.content[1]
     if (block.t == "Plain" or block.t == "Para") and has_br(block.content) then
-      cell.content[1] = pandoc.Plain(wrap_makecell(block.content))
+      cell.content[1] = pandoc.Plain(wrap_newline(block.content))
     end
   end
   return cell
@@ -114,7 +118,7 @@ function Table(tbl)
     return tbl
   end
 
-  -- 1. Handle <br> → \makecell in all rows (head and body).
+  -- 1. Handle <br> → \newline in all rows (head and body).
   tbl.head.rows = process_rows(tbl.head.rows)
   for i, body in ipairs(tbl.bodies) do
     body.head = process_rows(body.head)

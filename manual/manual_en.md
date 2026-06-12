@@ -180,7 +180,7 @@ Input fields
 | Announcement           |                   | Whether to publish the project immediately or at a later date. <br> "Unfixed" is recommended unless you have a specific intention. |
 | Principal investigator | Required          | Name of the PI.                                                                                    |
 | Affiliation            | Required          | Affiliation of the PI.                                                                             |
-| Publication            |                   | PubMed ID or DOI. <br> This can also be entered later from the My page screen; <br> you do not need to fill it in at this stage. |
+| Publication            |                   | PubMed ID or DOI. <br> This can also be entered later from the My page screen; you do not need to fill it in at this stage. |
 | Note                   |                   | Any other information you wish to specify.                                                         |
 
 1. Using the above as a guide, fill in each field. Fields marked with "[*]{.red}" are required.
@@ -267,9 +267,9 @@ Field descriptions
 
 | Field | Description              |
 |-------|--------------------------|
-| Biological replicate | A measurement taken from samples obtained from different biological individuals or <br> independent samples. <br> Example: Liver tissue samples obtained separately from multiple mice that received <br> the same treatment and measured individually. |
-| Technical replicate  | Samples prepared from a single biological specimen that were independently <br> pre-processed and measured. <br> Example: A single plasma sample split into two portions, each extracted and measured <br> by MS separately. |
-| Injection replicate  | A single prepared sample (already extracted and purified) that was injected <br> into an LC-MS system or similar multiple times for measurement. <br> Example: A single lipid extract in one container (not aliquoted) that was measured <br> by LC-MS three times. |
+| Biological replicate | A measurement taken from samples obtained from different biological individuals or independent samples. <br> Example: Liver tissue samples obtained separately from multiple mice that received the same treatment and measured individually. |
+| Technical replicate  | Samples prepared from a single biological specimen that were independently pre-processed and measured. <br> Example: A single plasma sample split into two portions, each extracted and measured by MS separately. |
+| Injection replicate  | A single prepared sample (already extracted and purified) that was injected into an LC-MS system or similar multiple times for measurement. <br> Example: A single lipid extract in one container (not aliquoted) that was measured by LC-MS three times. |
 
 Upload the completed Excel file following the same procedure.
 
