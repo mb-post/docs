@@ -3,6 +3,7 @@ title: "MB-POST User Manual"
 subtitle: "Submission Testing for MB-POST Using the Demo Site and Sample Data"
 author: "Shin-MassBank Project"
 version: "1.0"
+commit: "%%__LAST_COMMIT_ID__%%"
 date: "%%__LAST_COMMIT_DATE__%%"
 ---
 

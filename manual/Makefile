@@ -1,10 +1,13 @@
-DATE := $(shell git log -1 --format=%cd --date=format:"%B %-d, %Y")
+DATE      := $(shell git log -1 --format=%cd --date=format:"%B %-d, %Y")
+COMMIT_ID := $(shell git log -1 --format=%h)
+SED_SUBST := -e "s/%%__LAST_COMMIT_DATE__%%/$(DATE)/g" \
+             -e "s/%%__LAST_COMMIT_ID__%%/$(COMMIT_ID)/g"
 
 logo.pdf:
 	rsvg-convert -f pdf -o logo.pdf ./images/logo.svg
 
 pdf-ja: logo.pdf
-	sed "s/%%__LAST_COMMIT_DATE__%%/$(DATE)/g" manual_ja.md > /tmp/manual_ja_build.md
+	sed $(SED_SUBST) manual_ja.md > /tmp/manual_ja_build.md
 	python3 gen_meta.py /tmp/manual_ja_build.md ja tex > manual_defs_ja.tex
 	pandoc -f markdown -t pdf --pdf-engine=lualatex \
 		-V documentclass=ltjsreport \
@@ -28,7 +31,7 @@ pdf-ja: logo.pdf
 	rm /tmp/manual_ja_build.md
 
 pdf-en: logo.pdf
-	sed "s/%%__LAST_COMMIT_DATE__%%/$(DATE)/g" manual_en.md > /tmp/manual_en_build.md
+	sed $(SED_SUBST) manual_en.md > /tmp/manual_en_build.md
 	python3 gen_meta.py /tmp/manual_en_build.md en tex > manual_defs_en.tex
 	pandoc -f markdown -t pdf --pdf-engine=lualatex \
 		-V documentclass=ltjsreport \
@@ -51,7 +54,7 @@ pdf-en: logo.pdf
 	rm /tmp/manual_en_build.md
 
 html-ja:
-	sed "s/%%__LAST_COMMIT_DATE__%%/$(DATE)/g" manual_ja.md > /tmp/manual_ja_build.md
+	sed $(SED_SUBST) manual_ja.md > /tmp/manual_ja_build.md
 	python3 gen_meta.py /tmp/manual_ja_build.md ja yaml > manual_meta_ja.yaml
 	pandoc -f markdown -t html \
 		--template=pandoc_template.html \
@@ -66,7 +69,7 @@ html-ja:
 	rm /tmp/manual_ja_build.md
 
 html-en:
-	sed "s/%%__LAST_COMMIT_DATE__%%/$(DATE)/g" manual_en.md > /tmp/manual_en_build.md
+	sed $(SED_SUBST) manual_en.md > /tmp/manual_en_build.md
 	python3 gen_meta.py /tmp/manual_en_build.md en yaml > manual_meta_en.yaml
 	pandoc -f markdown -t html \
 		--template=pandoc_template.html \

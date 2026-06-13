@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-gen_meta.py -- Markdown フロントマターから version/date を読み取り、
+gen_meta.py -- Markdown フロントマターから version/date/commit を読み取り、
 PDF 用 LaTeX 定義ファイルまたは HTML 用 YAML メタデータを標準出力へ出力する。
 
 使い方:
@@ -21,15 +21,23 @@ def main():
 
     version_m = re.search(r'^version:\s*["\']?([\d.]+)', content, re.M)
     date_m    = re.search(r'^date:.*?(\d{4})',          content, re.M)
+    commit_m  = re.search(r'^commit:\s*["\']?([^"\'\s]+)', content, re.M)
 
     if not version_m:
         sys.exit(f'Error: "version" field not found in {md_file}')
     if not date_m:
         sys.exit(f'Error: "date" field not found in {md_file}')
+    if not commit_m:
+        sys.exit(f'Error: "commit" field not found in {md_file}')
 
-    version    = version_m.group(1)
-    year       = date_m.group(1)
-    docversion = f'第 {version} 版' if lang == 'ja' else f'Version {version}'
+    version = version_m.group(1)
+    year    = date_m.group(1)
+    commit  = commit_m.group(1)
+
+    if lang == 'ja':
+        docversion = f'第 {version} 版 (commit id: {commit})'
+    else:
+        docversion = f'Version {version} (commit id: {commit})'
 
     if mode == 'tex':
         print(f'\\def\\TBCopyYear{{{year}}}')
