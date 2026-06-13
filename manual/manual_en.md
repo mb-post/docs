@@ -170,7 +170,7 @@ Navigate to the project creation screen.
 
 ![Navigating to the project list screen](images/page11_fig01.svg){width=100%}
 
-Input fields
+### Input fields
 
 
 | Field                  | Required/Optional | Description                                                                                        |
@@ -264,7 +264,7 @@ Create a Replicate file.
 
 ![Template Excel file for entering replicate information](images/page17_fig03.svg){width=100%}
 
-Field descriptions
+#### Field descriptions
 
 | Field | Description              |
 |-------|--------------------------|
