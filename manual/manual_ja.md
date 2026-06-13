@@ -1,5 +1,6 @@
 ---
 title: "MB-POST 操作マニュアル"
+subtitle: "デモサイトとサンプルデータを利用した MB-POST への投稿テスト"
 author: "Shin-MassBank Project"
 version: "1.0"
 date: "%%__LAST_COMMIT_DATE__%%"
